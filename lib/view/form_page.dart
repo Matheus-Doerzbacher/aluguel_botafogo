@@ -79,8 +79,7 @@ class _FormPageState extends State<FormPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descricaoController,
-                decoration:
-                    const InputDecoration(labelText: 'Descrição do Imóvel'),
+                decoration: const InputDecoration(labelText: 'Descrição'),
               ),
               const SizedBox(height: 16),
               Row(
