@@ -4,7 +4,12 @@ class Aluguel {
   final String descricao;
   final DateTime dia;
 
-  Aluguel(this.id, this.pessoa, this.descricao, this.dia);
+  Aluguel({
+    required this.id,
+    required this.pessoa,
+    required this.descricao,
+    required this.dia,
+  });
 
   Map<String, dynamic> toJson() {
     return {
@@ -17,10 +22,10 @@ class Aluguel {
 
   factory Aluguel.fromJson(Map<String, dynamic> json) {
     return Aluguel(
-      json['id'],
-      json['pessoa'],
-      json['descricao'],
-      DateTime.parse(json['dia']),
+      id: json['id'],
+      pessoa: json['pessoa'],
+      descricao: json['descricao'],
+      dia: DateTime.parse(json['dia']),
     );
   }
 
@@ -31,10 +36,10 @@ class Aluguel {
     DateTime? dia,
   }) {
     return Aluguel(
-      id ?? this.id,
-      pessoa ?? this.pessoa,
-      descricao ?? this.descricao,
-      dia ?? this.dia,
+      id: id ?? this.id,
+      pessoa: pessoa ?? this.pessoa,
+      descricao: descricao ?? this.descricao,
+      dia: dia ?? this.dia,
     );
   }
 }
