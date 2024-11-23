@@ -33,7 +33,7 @@ class AluguelController extends ChangeNotifier {
   Future<void> updateAluguel(Aluguel aluguel) async {
     await updateAluguelRepository(aluguel);
 
-    final index = _alugueis.indexWhere((aluguel) => aluguel.id == aluguel.id);
+    final index = _alugueis.indexWhere((a) => a.id == aluguel.id);
     if (index != -1) {
       _alugueis[index] = aluguel;
       notifyListeners();
