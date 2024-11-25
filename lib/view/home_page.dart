@@ -117,19 +117,25 @@ class _HomePageState extends State<HomePage> {
                                   arguments: aluguel);
                             },
                             title: Text(aluguel.pessoa),
-                            subtitle: Text(aluguel.descricao),
-                            trailing: Text(
-                              DateFormat(
-                                      'EEE dd \'de\' MMM \'de\' yyyy', 'pt_BR')
-                                  .format(aluguel.dia)
-                                  .split(' ')
-                                  .map((word) =>
-                                      word == 'de' ? word : capitalize(word))
-                                  .join(' '),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(aluguel.descricao),
+                                Text(
+                                  DateFormat('EEE dd \'de\' MMM \'de\' yyyy',
+                                          'pt_BR')
+                                      .format(aluguel.dia)
+                                      .split(' ')
+                                      .map((word) => word == 'de'
+                                          ? word
+                                          : capitalize(word))
+                                      .join(' '),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
