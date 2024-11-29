@@ -25,7 +25,7 @@ class _FormPageState extends State<FormPage> {
   final TextEditingController _descricaoController = TextEditingController();
   final TextEditingController _diaController = TextEditingController();
   final TextEditingController _formatDateController = TextEditingController();
-
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   @override
   void initState() {
     super.initState();
@@ -42,6 +42,19 @@ class _FormPageState extends State<FormPage> {
   }
 
   void onSubmit() {
+    if (!_formKey.currentState!.validate() ||
+        _formatDateController.text.isEmpty) {
+      if (_formatDateController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor, selecione uma data.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
     final Aluguel aluguel = Aluguel(
       id: widget.aluguel?.id ?? '',
       pessoa: _locatarioController.text,
@@ -69,17 +82,30 @@ class _FormPageState extends State<FormPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 controller: _locatarioController,
                 decoration:
                     const InputDecoration(labelText: 'Nome do Locatário'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Adicione o nome do locatário';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descricaoController,
                 decoration: const InputDecoration(labelText: 'Descrição'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Adicione uma descrição';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               Row(
@@ -98,8 +124,7 @@ class _FormPageState extends State<FormPage> {
                             : DateTime.parse(_formatDateController.text),
                         firstDate: DateTime(1900),
                         lastDate: DateTime(2050),
-                        locale: const Locale(
-                            'pt', 'BR'), // Definir o idioma para português
+                        locale: const Locale('pt', 'BR'),
                       );
                       if (picked != null) {
                         setState(() {
