@@ -22,20 +22,7 @@ class _HomePageState extends State<HomePage> {
     final AluguelController controller =
         Provider.of<AluguelController>(context);
     Intl.defaultLocale = 'pt_BR';
-    final List<Aluguel> alugueis = controller.alugueis;
 
-    // Ordenar os alugueis pela data
-    alugueis.sort((a, b) => a.dia.compareTo(b.dia));
-
-    // Organizar os alugueis por mês
-    final Map<String, List<Aluguel>> alugueisPorMes = {};
-    for (var aluguel in alugueis) {
-      final mesAno = DateFormat('MMMM yyyy', 'pt_BR').format(aluguel.dia);
-      if (!alugueisPorMes.containsKey(mesAno)) {
-        alugueisPorMes[mesAno] = [];
-      }
-      alugueisPorMes[mesAno]!.add(aluguel);
-    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aluguel Botafogo'),
@@ -48,108 +35,123 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: controller.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: alugueis.isNotEmpty
-                  ? ListView(
-                      children: alugueisPorMes.entries.expand((entry) {
-                        final mesAno = entry.key;
-                        final alugueisDoMes = entry.value;
-                        return [
-                          Text(
-                            mesAno,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          ...alugueisDoMes.map((aluguel) {
-                            return Dismissible(
-                              direction: DismissDirection.startToEnd,
-                              key: UniqueKey(),
-                              onDismissed: (direction) async {
-                                if (direction == DismissDirection.startToEnd) {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: const Text('Confirmação'),
-                                        content: const Text(
-                                            'Tem certeza que deseja excluir este item?'),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context)
-                                                    .pop(false),
-                                            child: const Text('Cancelar'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(true),
-                                            child: const Text('Excluir'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                  if (confirm == true) {
-                                    controller.removeAluguel(
-                                        alugueis.indexOf(aluguel));
-                                  } else {
-                                    setState(() {});
-                                  }
-                                }
-                              },
-                              background: const Row(
-                                children: [
-                                  SizedBox(width: 16),
-                                  Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                    size: 32,
+      body: StreamBuilder<List<Aluguel>>(
+        stream: controller.streamAlugueis(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Nenhum aluguel encontrado'));
+          }
+
+          final List<Aluguel> alugueis = snapshot.data!;
+          alugueis.sort((a, b) => a.dia.compareTo(b.dia));
+
+          final Map<String, List<Aluguel>> alugueisPorMes = {};
+          for (var aluguel in alugueis) {
+            final mesAno = DateFormat('MMMM yyyy', 'pt_BR').format(aluguel.dia);
+            if (!alugueisPorMes.containsKey(mesAno)) {
+              alugueisPorMes[mesAno] = [];
+            }
+            alugueisPorMes[mesAno]!.add(aluguel);
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
+              children: alugueisPorMes.entries.expand((entry) {
+                final mesAno = entry.key;
+                final alugueisDoMes = entry.value;
+                return [
+                  Text(
+                    mesAno,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  ...alugueisDoMes.map((aluguel) {
+                    return Dismissible(
+                      direction: DismissDirection.startToEnd,
+                      key: UniqueKey(),
+                      onDismissed: (direction) async {
+                        if (direction == DismissDirection.startToEnd) {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Confirmação'),
+                                content: const Text(
+                                    'Tem certeza que deseja excluir este item?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    child: const Text('Excluir'),
                                   ),
                                 ],
-                              ),
-                              child: Card(
-                                child: ListTile(
-                                  onTap: () {
-                                    Navigator.pushNamed(context, '/form',
-                                        arguments: aluguel);
-                                  },
-                                  title: Text(aluguel.pessoa),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(aluguel.descricao),
-                                      Text(
-                                        DateFormat(
-                                                'EEE dd \'de\' MMM \'de\' yyyy',
-                                                'pt_BR')
-                                            .format(aluguel.dia)
-                                            .split(' ')
-                                            .map((word) => word == 'de'
-                                                ? word
-                                                : capitalize(word))
-                                            .join(' '),
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              );
+                            },
+                          );
+                          if (confirm == true) {
+                            controller.removeAluguel(aluguel.id!);
+                          } else {
+                            setState(() {});
+                          }
+                        }
+                      },
+                      background: const Row(
+                        children: [
+                          SizedBox(width: 16),
+                          Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 32,
+                          ),
+                        ],
+                      ),
+                      child: Card(
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/form',
+                                arguments: aluguel);
+                          },
+                          title: Text(aluguel.pessoa),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(aluguel.descricao),
+                              Text(
+                                DateFormat('EEE dd \'de\' MMM \'de\' yyyy',
+                                        'pt_BR')
+                                    .format(aluguel.dia)
+                                    .split(' ')
+                                    .map((word) =>
+                                        word == 'de' ? word : capitalize(word))
+                                    .join(' '),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          }),
-                        ];
-                      }).toList(),
-                    )
-                  : const Center(child: Text('Nenhum aluguel encontrado')),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ];
+              }).toList(),
             ),
+          );
+        },
+      ),
     );
   }
 }

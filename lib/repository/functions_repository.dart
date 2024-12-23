@@ -1,10 +1,11 @@
 import 'package:aluguel_botafogo/model/aluguel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-Future<List<Aluguel>> getAlugueisRepository() async {
+Stream<List<Aluguel>> getAlugueisRepository() {
   final firestore = FirebaseFirestore.instance;
-  final snapshot = await firestore.collection('aluguel').get();
-  return snapshot.docs.map((doc) => Aluguel.fromJson(doc.data())).toList();
+  return firestore.collection('aluguel').snapshots().map((snapshot) {
+    return snapshot.docs.map((doc) => Aluguel.fromJson(doc.data())).toList();
+  });
 }
 
 Future<Aluguel> addAluguelRepository(Aluguel aluguel) async {
